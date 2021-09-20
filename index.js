@@ -7,6 +7,8 @@ const client = new Discord.Client();
 
 const queue = new Map();
 
+var looping = false;
+
 client.once("ready", () => {
   console.log("Ready!");
 });
@@ -43,7 +45,6 @@ client.on("message", async message => {
         {
             message.reply("No arguments given!");
         }
-        return;
     } 
     else if (message.content.startsWith(`${prefix}skip`)) 
     {
@@ -63,6 +64,11 @@ client.on("message", async message => {
         });
         message.reply(queuetext);
         return;
+    }
+    else if (message.content.startsWith(`${prefix}loop`))
+    {
+        looping = !looping;
+        message.reply("Looping is now: " + looping);
     }
     else 
     {
@@ -149,7 +155,7 @@ function play(guild, song) {
     const dispatcher = serverQueue.connection
         .play(ytdl(song.url))
         .on("finish", () => {
-        serverQueue.songs.shift();
+            if (!looping) serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
         })
         .on("error", error => console.error(error));
